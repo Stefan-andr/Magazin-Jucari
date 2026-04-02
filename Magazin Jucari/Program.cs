@@ -1,123 +1,189 @@
-
-using System;
+﻿using System;
 using System.Collections.Generic;
-public class Jucarie
-{
-    public string Nume { get; set; }
-    public double Pret { get; set; }
-    public string Categorie { get; set; }
-    public int Stoc { get; set; }
-
-    public Jucarie(string nume, double pret, string categorie, int stoc)
-    {
-        Nume = nume;
-        Pret = pret;
-        Categorie = categorie;
-        Stoc = stoc;
-    }
-
-    public void Afiseaza()
-    {
-        Console.WriteLine($"Nume: {Nume}, Pret: {Pret}, Categorie: {Categorie}, Stoc: {Stoc}");
-    }
-}
-
+using System.Globalization;
+using System.Linq;
 
 class Program
 {
     static void Main()
     {
-        List<Jucarie> magazin = new List<Jucarie>();
+        IStocareData admin = new AdministrareJucariiFisier("jucarii.txt");
+        List<Jucarie> magazin = admin.GetJucarii();
+
         bool ruleaza = true;
 
         while (ruleaza)
         {
             Console.WriteLine("\n--- MENIU ---");
-            Console.WriteLine("1. Adauga jucarie");
-            Console.WriteLine("2. Afiseaza jucarii");
-            Console.WriteLine("3. Cauta jucarie dupa nume");
+            Console.WriteLine("1. Adauga");
+            Console.WriteLine("2. Afiseaza");
+            Console.WriteLine("3. Cauta dupa nume");
+            Console.WriteLine("4. Modifica");
+            Console.WriteLine("5. Cauta dupa categorie");
             Console.WriteLine("0. Iesire");
 
-            Console.Write("Alege optiunea: ");
             int opt = Convert.ToInt32(Console.ReadLine());
 
             switch (opt)
             {
                 case 1:
-                    AdaugaJucarie(magazin);
+                    var j = CitesteJucarie();
+                    magazin.Add(j);
+                    admin.AddJucarie(j);
                     break;
 
                 case 2:
-                    AfiseazaJucarii(magazin);
+                    foreach (var x in magazin)
+                        x.Afiseaza();
                     break;
 
                 case 3:
-                    CautaJucarie(magazin);
+                    // Tema 3: LINQ in cautare
+                    CautaJucarie(magazin, (AdministrareJucariiFisier)admin);
+                    break;
+
+                case 4:
+                    ModificaJucarie(magazin, admin);
+                    break;
+
+                case 5:
+                    // Tema 3: LINQ filtrare dupa enum
+                    CautaDupaCategorie(magazin, (AdministrareJucariiFisier)admin);
                     break;
 
                 case 0:
                     ruleaza = false;
                     break;
-
-                default:
-                    Console.WriteLine("Optiune invalida!");
-                    break;
             }
         }
     }
 
-    static void AdaugaJucarie(List<Jucarie> magazin)
+    static Jucarie CitesteJucarie()
     {
         Console.Write("Nume: ");
         string nume = Console.ReadLine();
 
         Console.Write("Pret: ");
-        double pret = Convert.ToDouble(Console.ReadLine());
+        double pret = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
 
-        Console.Write("Categorie: ");
+        Console.Write("Categorie (text): ");
         string categorie = Console.ReadLine();
 
         Console.Write("Stoc: ");
-        int stoc = Convert.ToInt32(Console.ReadLine());
+        int stoc = int.Parse(Console.ReadLine());
 
-        magazin.Add(new Jucarie(nume, pret, categorie, stoc));
+        // Tema 2: citire enum CategorieJucarie cu tratare exceptii
+        CategorieJucarie tipCategorie = CitesteCategorie();
 
-        Console.WriteLine("Jucarie adaugata!");
+        // Tema 2: citire enum Flags OptiuniJucarie
+        OptiuniJucarie optiuni = CitesteOptiuni();
+
+        return new Jucarie(nume, pret, categorie, stoc, tipCategorie, optiuni);
     }
 
-    static void AfiseazaJucarii(List<Jucarie> magazin)
+    // Tema 2 + Tema 3 exceptii: citire enum cu try-catch
+    static CategorieJucarie CitesteCategorie()
     {
-        if (magazin.Count == 0)
+        Console.WriteLine("\nAlege tipul categoriei:");
+        foreach (CategorieJucarie val in Enum.GetValues(typeof(CategorieJucarie)))
         {
-            Console.WriteLine("Nu exista jucarii!");
-            return;
+            Console.WriteLine($"  {(int)val} - {val}");
         }
 
-        foreach (var j in magazin)
+        while (true)
         {
-            j.Afiseaza();
+            try
+            {
+                Console.Write("Optiune: ");
+                int optiune = int.Parse(Console.ReadLine());
+
+                if (Enum.IsDefined(typeof(CategorieJucarie), optiune))
+                    return (CategorieJucarie)optiune;
+                else
+                    Console.WriteLine("Valoare invalida. Incearca din nou.");
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Eroare: Trebuie sa introduci un numar valid.");
+            }
         }
     }
 
-    static void CautaJucarie(List<Jucarie> magazin)
+    // Tema 2: citire enum Flags (pot fi combinate mai multe optiuni)
+    static OptiuniJucarie CitesteOptiuni()
+    {
+        Console.WriteLine("\nAlege optiunile (pot fi combinate, ex: 1+2=3):");
+        foreach (OptiuniJucarie val in Enum.GetValues(typeof(OptiuniJucarie)))
+        {
+            if (val != OptiuniJucarie.Niciuna)
+                Console.WriteLine($"  {(int)val} - {val}");
+        }
+
+        while (true)
+        {
+            try
+            {
+                Console.Write("Optiuni (suma valorilor): ");
+                int optiune = int.Parse(Console.ReadLine());
+                return (OptiuniJucarie)optiune;
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Eroare: Trebuie sa introduci un numar valid.");
+            }
+        }
+    }
+
+    // Tema 3: LINQ in cautare dupa nume
+    static void CautaJucarie(List<Jucarie> magazin, AdministrareJucariiFisier admin)
     {
         Console.Write("Introdu numele: ");
         string nume = Console.ReadLine();
 
-        bool gasit = false;
+        List<Jucarie> rezultate = admin.CautaDupaNume(magazin, nume);
 
-        foreach (var j in magazin)
-        {
-            if (j.Nume.ToLower() == nume.ToLower())
-            {
+        if (rezultate.Count == 0)
+            Console.WriteLine("Nu s-au gasit rezultate.");
+        else
+            foreach (var j in rezultate)
                 j.Afiseaza();
-                gasit = true;
-            }
-        }
+    }
 
-        if (!gasit)
+    // Tema 3: LINQ filtrare dupa categorie enum
+    static void CautaDupaCategorie(List<Jucarie> magazin, AdministrareJucariiFisier admin)
+    {
+        CategorieJucarie tip = CitesteCategorie();
+
+        List<Jucarie> rezultate = admin.CautaDupaCategorie(magazin, tip);
+
+        if (rezultate.Count == 0)
+            Console.WriteLine("Nu s-au gasit jucarii in aceasta categorie.");
+        else
+            foreach (var j in rezultate)
+                j.Afiseaza();
+    }
+
+    static void ModificaJucarie(List<Jucarie> magazin, IStocareData admin)
+    {
+        Console.Write("Numele jucariei: ");
+        string nume = Console.ReadLine();
+
+        var j = magazin.FirstOrDefault(x => x.Nume.ToLower() == nume.ToLower());
+
+        if (j != null)
         {
-            Console.WriteLine("Jucaria nu a fost gasita!");
+            Console.Write("Pret nou: ");
+            j.Pret = double.Parse(Console.ReadLine(), CultureInfo.InvariantCulture);
+
+            Console.Write("Stoc nou: ");
+            j.Stoc = int.Parse(Console.ReadLine());
+
+            admin.SalveazaTot(magazin);
+            Console.WriteLine("Modificat si salvat!");
+        }
+        else
+        {
+            Console.WriteLine("Nu exista!");
         }
     }
 }

@@ -1,0 +1,86 @@
+﻿<Window x:Class="MagazinWPF.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Magazin Jucarii"
+        Height="500"
+        Width="700"
+        WindowState="Maximized"
+        WindowStyle="ThreeDBorderWindow"
+        Background="#2C1654">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="CuloarePrincipala" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="CuloareAccent" Color="#F1C40F"/>
+        <SolidColorBrush x:Key="CuloareFundal" Color="#FFFFFF"/>
+
+        <Style TargetType="Label">
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <StackPanel HorizontalAlignment="Center"
+                    VerticalAlignment="Center">
+
+            <!-- Titlu principal -->
+            <Label Content="Magazin de Jucării"
+                   FontFamily="Segoe UI Light"
+                   FontSize="32"
+                   FontWeight="Bold"
+                   Foreground="White"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,10"/>
+
+            <!-- Slogan -->
+            <Label Content="Nu dați banii pe benzină, luații la copii mașina!"
+                   FontFamily="Segoe UI"
+                   FontSize="16"
+                   FontStyle="Italic"
+                   Foreground="{StaticResource CuloareAccent}"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,30"/>
+
+            <!-- Card cu border alb si interior alb cu text negru -->
+            <Border Background="{StaticResource CuloareFundal}"
+                    BorderBrush="White"
+                    BorderThickness="3"
+                    CornerRadius="10"
+                    Padding="30"
+                    Width="450">
+                <StackPanel>
+                    <Label Name="lblNume"
+                           Content="Nume: Mașinuță Ferrari"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="Black"/>
+
+                    <Label Name="lblPret"
+                           Content="Preț: 149.99 lei"
+                           FontSize="16"
+                           Foreground="Black"/>
+
+                    <Label Name="lblCategorie"
+                           Content="Categorie: Vehicule"
+                           FontSize="16"
+                           Foreground="Black"/>
+
+                    <Label Name="lblStoc"
+                           Content="Stoc: 25 bucăți"
+                           FontSize="16"
+                           Foreground="#27AE60"/>
+                </StackPanel>
+            </Border>
+
+            <!-- Disponibilitate -->
+            <Label Content="Produs disponibil în stoc!"
+                   FontStyle="Italic"
+                   Foreground="#27AE60"
+                   HorizontalAlignment="Center"
+                   Margin="0,20,0,0"/>
+
+        </StackPanel>
+    </Grid>
+</Window>
